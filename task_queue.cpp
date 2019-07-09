@@ -7,7 +7,7 @@ namespace stream_hub {
   }
 
   TaskQueue::~TaskQueue() {
-    queue_.reset();
+
   }
 
   void TaskQueue::PushTask(const Task& task) {

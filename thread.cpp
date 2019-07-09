@@ -35,12 +35,12 @@ namespace stream_hub {
   void Thread::Stop() {
     Task stop_task(std::bind(&Thread::StopTask, this));
     PostTask(stop_task);
+    if (thread_.joinable())
+      thread_.join();
   }
 
   void Thread::StopTask() {
     is_stoped_ = true;
-    if (thread_.joinable())
-      thread_.join();
   }
 
   void Thread::PostTask(const Task& task) {
