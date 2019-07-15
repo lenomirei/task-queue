@@ -1,5 +1,4 @@
 #include "task_queue.h"
-
 namespace stream_hub {
 
   TaskQueue::TaskQueue() {
@@ -27,7 +26,6 @@ namespace stream_hub {
     std::unique_lock<std::mutex> lck(queue_mutex_);
     while (queue_->empty())
       cond_.wait(lck);
-
     Task task = queue_->front();
     queue_->pop();
     return std::move(task);

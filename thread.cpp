@@ -11,8 +11,10 @@ namespace stream_hub {
   }
 
   Thread::~Thread() {
+    // Stop必须是同步的，等待Loop结束后才能结束，以保证task_queue的可用性
     if (!is_stoped_)
       Stop();
+    std::move(thread_);
   }
 
   void Thread::Run() {
@@ -33,6 +35,7 @@ namespace stream_hub {
   }
 
   void Thread::Stop() {
+    // 不能在子线程中对自身join，不然会触发abort
     Task stop_task(std::bind(&Thread::StopTask, this));
     PostTask(stop_task);
     if (thread_.joinable())
