@@ -6,34 +6,26 @@
 #include <condition_variable>
 #include "task.h"
 
-namespace stream_hub {
+class TaskQueue {
+public:
+  TaskQueue();
+  ~TaskQueue();
 
-  class TaskQueue {
-  public:
-    TaskQueue();
-    ~TaskQueue();
+  void PushTask(const Task& task);
 
-    void PushTask(const Task& task);
+  const Task PopTask();
 
-    const Task PopTask();
-
-    bool Empty() {
-      std::lock_guard<std::mutex> lock(queue_mutex_);
-      return queue_->empty();
-    }
+  bool Empty() {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    return queue_->empty();
+  }
 
 
 
-  private:
+private:
 
-    std::mutex queue_mutex_;
-    std::unique_ptr<std::queue<Task>> queue_;
-    bool need_notify_ = false;
-    std::condition_variable cond_;
-  };
-
-} // namespace stream_hub
-
-
-
-
+  std::mutex queue_mutex_;
+  std::unique_ptr<std::queue<Task>> queue_;
+  bool need_notify_ = false;
+  std::condition_variable cond_;
+};

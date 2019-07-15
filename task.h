@@ -1,29 +1,21 @@
 #pragma once
 #include <functional>
 
+class Task {
+public:
 
-namespace stream_hub {
+  Task(const std::function<void()>& func) : function_(std::move(func)) {
+  }
 
-  class Task {
-  public:
+  ~Task() {
 
-    Task(const std::function<void()>& func) : function_(std::move(func)) {
-    }
+  }
 
-    ~Task() {
+  void Run() {
+    function_();
+  }
 
-    }
+private:
 
-    void Run() {
-      function_();
-    }
-
-  private:
-
-    std::function<void()> function_;
-  };
-
-} // namespace stream_hub
-
-
-
+  std::function<void()> function_;
+};
