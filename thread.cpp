@@ -6,7 +6,9 @@
 
 Thread::Thread()
   : is_stoped_(true),
-  task_queue_(std::make_unique<TaskQueue>()) {
+  task_queue_(std::make_unique<TaskQueue>()),
+  delayed_task_queue_(std::make_unique<TaskQueue>()) {
+  recent_time_ = std::chrono::system_clock::now();
 }
 
 Thread::~Thread() {
@@ -49,3 +51,19 @@ void Thread::PostTask(const Task& task) {
   task_queue_->PushTask(task);
 }
 
+void Thread::PostDelayTask(const Task& task, const std::chrono::duration<int>& delta_time) {
+
+}
+
+void Thread::DoDelayedWork(const std::chrono::time_point<std::chrono::system_clock>& next_delayed_work_time) {
+  auto next_run_time = delayed_task_queue_->Peek().delayed_run_time_;
+
+  if (next_run_time > recent_time_) {
+    recent_time_ = next_run_time;
+    return;
+  }
+}
+
+void Thread::CalculateDelayRuntime(std::chrono::duration<int> delay) {
+
+}

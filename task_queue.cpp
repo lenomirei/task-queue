@@ -30,3 +30,6 @@ const Task TaskQueue::PopTask() {
   return std::move(task);
 }
 
+const Task& TaskQueue::Peek() {
+
+}

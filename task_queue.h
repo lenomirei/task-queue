@@ -15,6 +15,8 @@ public:
 
   const Task PopTask();
 
+  const Task& Peek();
+
   bool Empty() {
     std::lock_guard<std::mutex> lock(queue_mutex_);
     return queue_->empty();
