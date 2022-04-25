@@ -10,9 +10,8 @@ Thread::Thread()
 }
 
 Thread::~Thread() {
-  // Stop±ØĞëÊÇÍ¬²½µÄ£¬µÈ´ıLoop½áÊøºó²ÅÄÜ½áÊø£¬ÒÔ±£Ö¤task_queueµÄ¿ÉÓÃĞÔ
-  if (!is_stoped_)
-    Stop();
+  // Stopå¿…é¡»æ˜¯åŒæ­¥çš„ï¼Œç­‰å¾…Loopç»“æŸåæ‰èƒ½ç»“æŸï¼Œä»¥ä¿è¯task_queueçš„å¯ç”¨æ€§
+  Stop();
   if (thread_.joinable())
       thread_.join();
 }
@@ -29,13 +28,14 @@ void Thread::Loop() {
       // need to clear task queue?
       return;
     }
+    // çº¿ç¨‹æœ¬èº«æ²¡æœ‰ç­‰å¾…ï¼Œåœ¨PopTaskçš„æ—¶å€™ï¼Œå¦‚æœé˜Ÿåˆ—å†…æ²¡æœ‰ä»»åŠ¡ä¼šwait
     Task task = task_queue_->PopTask();
     task.Run();
   }
 }
 
 void Thread::Stop() {
-  // ²»ÄÜÔÚ×ÓÏß³ÌÖĞ¶Ô×ÔÉíjoin£¬²»È»»á´¥·¢abort
+  // ä¸èƒ½åœ¨å­çº¿ç¨‹ä¸­å¯¹è‡ªèº«joinï¼Œä¸ç„¶ä¼šè§¦å‘abort
   Task stop_task(std::bind(&Thread::StopTask, this));
   PostTask(stop_task);
 }
