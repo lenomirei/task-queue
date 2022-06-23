@@ -1,17 +1,21 @@
 #pragma once
 #include <functional>
 
-class Task {
+class Task
+{
 public:
 
-    Task(const std::function<void()>& func) : function_(std::move(func)) {
+    Task(const std::function<void()>& func) : function_(std::move(func))
+    {
     }
 
-    ~Task() {
+    ~Task()
+    {
 
     }
 
-    void Run() {
+    void Run()
+    {
         function_();
     }
 

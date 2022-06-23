@@ -6,25 +6,31 @@
 
 Thread::Thread()
     : is_stoped_(true),
-    task_queue_(std::make_unique<TaskQueue>()) {
+    task_queue_(std::make_unique<TaskQueue>())
+{
 }
 
-Thread::~Thread() {
+Thread::~Thread()
+{
     // Stop必须是同步的，等待Loop结束后才能结束，以保证task_queue的可用性
     StopWithClosure();
     if (thread_.joinable())
         thread_.join();
 }
 
-void Thread::Run() {
+void Thread::Run()
+{
     is_stoped_ = false;
     auto thread_funciton = std::bind(&Thread::Loop, this);
     thread_ = std::move(std::thread(thread_funciton));
 }
 
-void Thread::Loop() {
-    while (1) {
-        if (is_stoped_) {
+void Thread::Loop()
+{
+    while (1)
+    {
+        if (is_stoped_)
+        {
             // need to clear task queue?
             return;
         }
@@ -34,14 +40,16 @@ void Thread::Loop() {
     }
 }
 
-void Thread::StopWithClosure(bool as_soon_as_possible) {
+void Thread::StopWithClosure(bool as_soon_as_possible)
+{
     // 不能在子线程中对自身join，不然会触发abort
     Task stop_task(std::bind(&Thread::StopTask, this));
 
     PostTask(stop_task, as_soon_as_possible);
 }
 
-void Thread::StopTask() {
+void Thread::StopTask()
+{
     is_stoped_ = true;
 }
 

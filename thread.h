@@ -8,7 +8,8 @@
 class TaskQueue;
 class Task;
 
-class Thread {
+class Thread
+{
 public:
     Thread();
 

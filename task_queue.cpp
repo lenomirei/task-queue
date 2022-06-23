@@ -1,14 +1,17 @@
 #include "task_queue.h"
 
-TaskQueue::TaskQueue() {
+TaskQueue::TaskQueue()
+{
     queue_.reset(new std::deque<Task>());
 }
 
-TaskQueue::~TaskQueue() {
+TaskQueue::~TaskQueue()
+{
 
 }
 
-void TaskQueue::PushTask(const Task& task, bool front) {
+void TaskQueue::PushTask(const Task& task, bool front)
+{
     std::lock_guard<std::mutex> lock(queue_mutex_);
     if (queue_->empty())
         need_notify_ = true;
@@ -18,13 +21,15 @@ void TaskQueue::PushTask(const Task& task, bool front) {
     else
         queue_->emplace_back(task);
 
-    if (need_notify_) {
+    if (need_notify_)
+    {
         cond_.notify_one();
         need_notify_ = false;
     }
 }
 
-const Task TaskQueue::PopTask() {
+const Task TaskQueue::PopTask()
+{
     // multi thread attention!
     std::unique_lock<std::mutex> lck(queue_mutex_);
     while (queue_->empty())

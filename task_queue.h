@@ -6,7 +6,8 @@
 #include <condition_variable>
 #include "task.h"
 
-class TaskQueue {
+class TaskQueue
+{
 public:
     TaskQueue();
     ~TaskQueue();
@@ -15,15 +16,13 @@ public:
 
     const Task PopTask();
 
-    bool Empty() {
+    bool Empty()
+    {
         std::lock_guard<std::mutex> lock(queue_mutex_);
         return queue_->empty();
     }
 
-
-
 private:
-
     std::mutex queue_mutex_;
     std::unique_ptr<std::deque<Task>> queue_;
     bool need_notify_ = false;
