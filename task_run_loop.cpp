@@ -19,8 +19,13 @@ TaskRunLoop::~TaskRunLoop()
 void TaskRunLoop::Start()
 {
     running_ = true;
+    if (thread_)
+    {
+        StopWithClosure();
+    }
+
     auto thread_funciton = std::bind(&TaskRunLoop::ThreadMain, this);
-    thread_ = std::move(std::thread(thread_funciton));
+    thread_ = std::make_unique<std::thread>(thread_funciton);
 }
 
 void TaskRunLoop::ThreadMain()
@@ -46,6 +51,11 @@ void TaskRunLoop::Run()
             break;
         }
         // 线程本身没有等待，在PopTask的时候，如果队列内没有任务会wait
+        if (!task_queue_)
+        {
+            // should never run here
+            break;
+        }
         Task task = task_queue_->PopTask();
         task.Run();
     }
@@ -64,8 +74,8 @@ void TaskRunLoop::StopWithClosure(bool as_soon_as_possible)
 
     PostTask(stop_task, as_soon_as_possible);
     // this function run in another thread join the thread here
-    if (thread_.joinable())
-        thread_.join();
+    if (thread_ && thread_->joinable())
+        thread_->join();
     // after join the thread, running can be set false.
     running_ = false;
 }
@@ -78,10 +88,13 @@ void TaskRunLoop::StopTask()
 
 void TaskRunLoop::PostTask(const Task& task, bool as_soon_as_possible)
 {
-    if (as_soon_as_possible)
-        task_queue_->PushTask(task, true);
-    else
-        task_queue_->PushTask(task, false);
+    if (task_queue_)
+    {
+        if (as_soon_as_possible)
+            task_queue_->PushTask(task, true);
+        else
+            task_queue_->PushTask(task, false);
+    }
 }
 
 bool TaskRunLoop::IsRunning()
