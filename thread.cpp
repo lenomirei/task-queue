@@ -5,8 +5,7 @@
 
 
 Thread::Thread()
-    : is_stoped_(true),
-    task_queue_(std::make_unique<TaskQueue>())
+    : task_queue_(std::make_unique<TaskQueue>())
 {
 }
 
@@ -18,26 +17,45 @@ Thread::~Thread()
         thread_.join();
 }
 
-void Thread::Run()
+void Thread::Start()
 {
-    is_stoped_ = false;
-    auto thread_funciton = std::bind(&Thread::Loop, this);
+    auto thread_funciton = std::bind(&Thread::ThreadMain, this);
     thread_ = std::move(std::thread(thread_funciton));
 }
 
-void Thread::Loop()
+void Thread::ThreadMain()
+{
+    BeforeRun();
+    Run();
+    AfterRun();
+}
+
+void Thread::BeforeRun()
+{
+    std::unique_lock<std::mutex> lck(thread_lock_);
+    running_ = true;
+    is_stoped_ = false;
+}
+
+void Thread::Run()
 {
     while (1)
     {
         if (is_stoped_)
         {
             // need to clear task queue?
-            return;
+            break;
         }
         // 线程本身没有等待，在PopTask的时候，如果队列内没有任务会wait
         Task task = task_queue_->PopTask();
         task.Run();
     }
+}
+
+void Thread::AfterRun()
+{
+    std::unique_lock<std::mutex> lck(thread_lock_);
+    running_ = false;
 }
 
 void Thread::StopWithClosure(bool as_soon_as_possible)
@@ -50,6 +68,7 @@ void Thread::StopWithClosure(bool as_soon_as_possible)
 
 void Thread::StopTask()
 {
+    // Post this task to child thread, so this variable will be set in child thread.
     is_stoped_ = true;
 }
 
@@ -59,5 +78,12 @@ void Thread::PostTask(const Task& task, bool as_soon_as_possible)
         task_queue_->PushTask(task, true);
     else
         task_queue_->PushTask(task, false);
+}
+
+bool Thread::IsRunning()
+{
+    // maybe called in another thread
+    std::unique_lock<std::mutex> lck(thread_lock_);
+    return running_;
 }
 
