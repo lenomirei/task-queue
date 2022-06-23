@@ -4,18 +4,18 @@
 class Task {
 public:
 
-  Task(const std::function<void()>& func) : function_(std::move(func)) {
-  }
+    Task(const std::function<void()>& func) : function_(std::move(func)) {
+    }
 
-  ~Task() {
+    ~Task() {
 
-  }
+    }
 
-  void Run() {
-    function_();
-  }
+    void Run() {
+        function_();
+    }
 
 private:
 
-  std::function<void()> function_;
+    std::function<void()> function_;
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <queue>
+#include <deque>
 #include <memory>
 #include <mutex>
 #include <condition_variable>
@@ -8,24 +8,24 @@
 
 class TaskQueue {
 public:
-  TaskQueue();
-  ~TaskQueue();
+    TaskQueue();
+    ~TaskQueue();
 
-  void PushTask(const Task& task);
+    void PushTask(const Task& task, bool front = false);
 
-  const Task PopTask();
+    const Task PopTask();
 
-  bool Empty() {
-    std::lock_guard<std::mutex> lock(queue_mutex_);
-    return queue_->empty();
-  }
+    bool Empty() {
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        return queue_->empty();
+    }
 
 
 
 private:
 
-  std::mutex queue_mutex_;
-  std::unique_ptr<std::queue<Task>> queue_;
-  bool need_notify_ = false;
-  std::condition_variable cond_;
+    std::mutex queue_mutex_;
+    std::unique_ptr<std::deque<Task>> queue_;
+    bool need_notify_ = false;
+    std::condition_variable cond_;
 };

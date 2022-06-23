@@ -10,33 +10,33 @@ class Task;
 
 class Thread {
 public:
-  Thread();
+    Thread();
 
-  ~Thread();
+    ~Thread();
 
-  void Run();
+    void Run();
 
-  void Stop();
+    void StopWithClosure(bool as_soon_as_possible = false);
 
-  void PostTask(const Task& task);
+    void PostTask(const Task& task, bool as_soon_as_possible = false);
 
 protected:
 
-  void StopTask();
+    void StopTask();
 
-  void Loop();
+    void Loop();
 
 private:
 
-  bool is_stoped_;
+    bool is_stoped_;
 
-  std::thread thread_;
+    std::thread thread_;
 
-  std::unique_ptr<TaskQueue> task_queue_;
+    std::unique_ptr<TaskQueue> task_queue_;
 
-  std::mutex task_queue_lock_;
+    std::mutex task_queue_lock_;
 
-  std::mutex thread_lock_;
+    std::mutex thread_lock_;
 
 };
 
