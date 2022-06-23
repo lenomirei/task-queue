@@ -32,9 +32,9 @@ protected:
     void AfterRun();
 
 private:
-    // used for multithread
+    // used for multithread, can not use this varible in loop!
     bool running_ = false;
-    // only used for child thread
+    // only used for child thread loop, do not access this in other thread!
     bool is_stoped_ = true;
     std::thread thread_;
     std::unique_ptr<TaskQueue> task_queue_;
