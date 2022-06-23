@@ -5,7 +5,7 @@ class Task
 {
 public:
 
-    Task(const std::function<void()>& func) : function_(std::move(func))
+    Task(std::function<void()>& func) : function_(std::move(func))
     {
     }
 

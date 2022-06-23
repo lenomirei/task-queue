@@ -61,7 +61,7 @@ void Thread::AfterRun()
 void Thread::StopWithClosure(bool as_soon_as_possible)
 {
     // 不能在子线程中对自身join，不然会触发abort
-    Task stop_task(std::bind(&Thread::StopTask, this));
+    Task stop_task(static_cast<std::function<void()>>(std::bind(&Thread::StopTask, this)));
 
     PostTask(stop_task, as_soon_as_possible);
     // this function run in another thread join the thread here
