@@ -19,6 +19,7 @@ Thread::~Thread()
 
 void Thread::Start()
 {
+    running_ = true;
     auto thread_funciton = std::bind(&Thread::ThreadMain, this);
     thread_ = std::move(std::thread(thread_funciton));
 }
@@ -33,7 +34,6 @@ void Thread::ThreadMain()
 void Thread::BeforeRun()
 {
     std::unique_lock<std::mutex> lck(thread_lock_);
-    running_ = true;
     is_stoped_ = false;
 }
 
@@ -54,8 +54,8 @@ void Thread::Run()
 
 void Thread::AfterRun()
 {
-    std::unique_lock<std::mutex> lck(thread_lock_);
-    running_ = false;
+    // do nothing now
+    // std::unique_lock<std::mutex> lck(thread_lock_);
 }
 
 void Thread::StopWithClosure(bool as_soon_as_possible)
@@ -64,6 +64,11 @@ void Thread::StopWithClosure(bool as_soon_as_possible)
     Task stop_task(std::bind(&Thread::StopTask, this));
 
     PostTask(stop_task, as_soon_as_possible);
+    // this function run in another thread join the thread here
+    if (thread_.joinable())
+        thread_.join();
+    // after join the thread, running can be set false.
+    running_ = false;
 }
 
 void Thread::StopTask()
