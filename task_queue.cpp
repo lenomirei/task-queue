@@ -5,10 +5,7 @@ TaskQueue::TaskQueue()
     queue_.reset(new std::deque<Task>());
 }
 
-TaskQueue::~TaskQueue()
-{
-
-}
+TaskQueue::~TaskQueue() = default;
 
 void TaskQueue::PushTask(const Task& task, bool front)
 {

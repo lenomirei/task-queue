@@ -34,8 +34,8 @@ private:
     bool running_ = false;
     // only used for child thread loop, do not access this in other thread!
     bool is_stoped_ = true;
-    std::thread thread_;
-    std::unique_ptr<TaskQueue> task_queue_;
+    std::unique_ptr<std::thread> thread_ = nullptr;
+    std::unique_ptr<TaskQueue> task_queue_ = nullptr;
 
     std::mutex thread_lock_;
 

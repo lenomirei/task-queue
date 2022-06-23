@@ -9,10 +9,7 @@ public:
     {
     }
 
-    ~Task()
-    {
-
-    }
+    ~Task() = default;
 
     void Run()
     {
