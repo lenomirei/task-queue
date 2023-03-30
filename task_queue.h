@@ -12,7 +12,7 @@ public:
     TaskQueue();
     ~TaskQueue();
 
-    void PushTask(const Task& task, bool front = false);
+    void PushTask(Task task, bool front = false);
 
     const Task PopTask();
 

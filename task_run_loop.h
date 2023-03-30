@@ -17,7 +17,7 @@ public:
 
     void StopWithClosure(bool as_soon_as_possible = false);
 
-    void PostTask(const Task& task, bool as_soon_as_possible = false);
+    void PostTask(Task task, bool as_soon_as_possible = false);
     bool IsRunning();
 
 protected:
@@ -30,7 +30,7 @@ protected:
     void AfterRun();
 
 private:
-    // used for multithread, can not use this varible in loop!
+    // used for another thread, can not use this varible in loop!
     bool running_ = false;
     // only used for child thread loop, do not access this in other thread!
     bool is_stoped_ = true;

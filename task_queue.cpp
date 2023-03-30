@@ -7,16 +7,16 @@ TaskQueue::TaskQueue()
 
 TaskQueue::~TaskQueue() = default;
 
-void TaskQueue::PushTask(const Task& task, bool front)
+void TaskQueue::PushTask(Task task, bool front)
 {
     std::lock_guard<std::mutex> lock(queue_mutex_);
     if (queue_->empty())
         need_notify_ = true;
 
     if (front)
-        queue_->emplace_front(task);
+        queue_->emplace_front(std::move(task));
     else
-        queue_->emplace_back(task);
+        queue_->emplace_back(std::move(task));
 
     if (need_notify_)
     {

@@ -14,6 +14,7 @@ TaskRunLoop::~TaskRunLoop()
     // Stop必须是同步的，等待Loop结束后才能结束，以保证task_queue的可用性
     StopWithClosure();
     task_queue_ = nullptr;
+    thread_ = nullptr;
 }
 
 void TaskRunLoop::Start()
@@ -38,6 +39,7 @@ void TaskRunLoop::ThreadMain()
 void TaskRunLoop::BeforeRun()
 {
     std::unique_lock<std::mutex> lck(thread_lock_);
+    // only set it's initial value here
     is_stoped_ = false;
 }
 
@@ -69,7 +71,7 @@ void TaskRunLoop::AfterRun()
 
 void TaskRunLoop::StopWithClosure(bool as_soon_as_possible)
 {
-    // 不能在子线程中对自身join，不然会触发abort
+    // can not join in itself
     Task stop_task(static_cast<std::function<void()>>(std::bind(&TaskRunLoop::StopTask, this)));
 
     PostTask(stop_task, as_soon_as_possible);
@@ -80,20 +82,21 @@ void TaskRunLoop::StopWithClosure(bool as_soon_as_possible)
     running_ = false;
 }
 
+// This function will only be run in looped child thread
 void TaskRunLoop::StopTask()
 {
     // Post this task to child thread, so this variable will be set in child thread.
     is_stoped_ = true;
 }
 
-void TaskRunLoop::PostTask(const Task& task, bool as_soon_as_possible)
+void TaskRunLoop::PostTask(Task task, bool as_soon_as_possible)
 {
     if (task_queue_)
     {
         if (as_soon_as_possible)
-            task_queue_->PushTask(task, true);
+            task_queue_->PushTask(std::move(task), true);
         else
-            task_queue_->PushTask(task, false);
+            task_queue_->PushTask(std::move(task), false);
     }
 }
 
