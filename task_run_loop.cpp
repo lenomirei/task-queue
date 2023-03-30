@@ -72,7 +72,7 @@ void TaskRunLoop::AfterRun()
 void TaskRunLoop::StopWithClosure(bool as_soon_as_possible)
 {
     // can not join in itself
-    Task stop_task(static_cast<std::function<void()>>(std::bind(&TaskRunLoop::StopTask, this)));
+    Task stop_task(std::bind(&TaskRunLoop::StopTask, this));
 
     PostTask(stop_task, as_soon_as_possible);
     // this function run in another thread join the thread here

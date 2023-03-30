@@ -1,11 +1,13 @@
 #pragma once
 #include <functional>
 
+using OnceFunc = std::function<void()>;
+
 class Task
 {
 public:
 
-    Task(std::function<void()> func) : function_(std::move(func))
+    Task(OnceFunc func) : function_(std::move(func))
     {
     }
 
@@ -17,5 +19,5 @@ public:
     }
 
 private:
-    std::function<void()> function_;
+    OnceFunc function_;
 };
