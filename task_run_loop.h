@@ -13,12 +13,13 @@ class TaskRunLoop {
 
   ~TaskRunLoop();
 
-  void Start();
+  std::thread::id Start();
 
   void StopWithClosure(bool as_soon_as_possible = false);
 
   void PostTask(Task task, bool as_soon_as_possible = false);
   bool IsRunning();
+  bool IsInCurrentThread();
 
  protected:
   void StopTask();
@@ -41,4 +42,5 @@ class TaskRunLoop {
   std::mutex queue_mutex_;
   std::condition_variable cond_;
   bool need_notify_ = false;
+  std::thread::id current_thread_id_;
 };

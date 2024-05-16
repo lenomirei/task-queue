@@ -13,7 +13,7 @@ TaskRunLoop::~TaskRunLoop() {
   thread_ = nullptr;
 }
 
-void TaskRunLoop::Start() {
+std::thread::id TaskRunLoop::Start() {
   running_ = true;
   if (thread_) {
     StopWithClosure();
@@ -21,6 +21,8 @@ void TaskRunLoop::Start() {
 
   auto thread_funciton = std::bind(&TaskRunLoop::ThreadMain, this);
   thread_ = std::make_unique<std::thread>(thread_funciton);
+  current_thread_id_ = thread_->get_id();
+  return current_thread_id_;
 }
 
 void TaskRunLoop::ThreadMain() {
@@ -105,4 +107,9 @@ bool TaskRunLoop::IsRunning() {
   // maybe called in another thread
   std::unique_lock<std::mutex> lck(thread_lock_);
   return running_;
+}
+
+bool TaskRunLoop::IsInCurrentThread() {
+  std::thread::id now_id = std::this_thread::get_id();
+  return now_id == current_thread_id_;
 }
