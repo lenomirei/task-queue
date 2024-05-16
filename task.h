@@ -12,7 +12,7 @@ class Task {
   ~Task() = default;
 
   void Run() {
-    function_();
+    std::forward<OnceFunc>(function_)();
   }
 
  private:
