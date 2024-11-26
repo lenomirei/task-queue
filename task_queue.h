@@ -1,6 +1,8 @@
 #pragma once
 
 #include <deque>
+#include <queue>
+#include <vector>
 #include <memory>
 #include <mutex>
 #include <condition_variable>
@@ -16,15 +18,20 @@ public:
 
     const Task PopTask();
 
+    void PushDelayedTask(Task& task, std::chrono::milliseconds ms);
+
     bool Empty()
     {
         std::lock_guard<std::mutex> lock(queue_mutex_);
-        return queue_->empty();
+        return incoming_queue_->empty();
     }
+
+    void MoveReadyDelayedTaskToQueue();
+    std::chrono::system_clock::duration GetNextDesiredWakeUp();
 
 private:
     std::mutex queue_mutex_;
-    std::unique_ptr<std::deque<Task>> queue_;
+    std::unique_ptr<std::deque<Task>> incoming_queue_;
+    std::unique_ptr<std::priority_queue<Task>> delayed_queue_;
     bool need_notify_ = false;
-    std::condition_variable cond_;
 };

@@ -3,7 +3,6 @@
 #include "task.h"
 #include "task_queue.h"
 
-
 TaskRunLoop::TaskRunLoop()
     : task_queue_(std::make_unique<TaskQueue>())
 {
@@ -11,9 +10,9 @@ TaskRunLoop::TaskRunLoop()
 
 TaskRunLoop::~TaskRunLoop()
 {
-    // Stop必须是同步的，等待Loop结束后才能结束，以保证task_queue的可用性
-    StopWithClosure();
+    StopWithClosure(true);
     task_queue_ = nullptr;
+    thread_ = nullptr;
 }
 
 void TaskRunLoop::Start()
@@ -50,13 +49,24 @@ void TaskRunLoop::Run()
             // need to clear task queue?
             break;
         }
-        // 线程本身没有等待，在PopTask的时候，如果队列内没有任务会wait
+        // Thread handle wait. Task queue don't handle wait anymore.
         if (!task_queue_)
         {
             // should never run here
             break;
         }
+        task_queue_->MoveReadyDelayedTaskToQueue();
+
+        if (task_queue_->Empty())
+        {
+            std::chrono::system_clock::duration sleep_time = task_queue_->GetNextDesiredWakeUp();
+            std::unique_lock<std::mutex> lck(thread_lock_);
+            cond_.wait_for(lck, sleep_time);
+            continue;
+        }
+
         Task task = task_queue_->PopTask();
+
         task.Run();
     }
 }
@@ -75,7 +85,9 @@ void TaskRunLoop::StopWithClosure(bool as_soon_as_possible)
     PostTask(stop_task, as_soon_as_possible);
     // this function run in another thread join the thread here
     if (thread_ && thread_->joinable())
+    {
         thread_->join();
+    }
     // after join the thread, running can be set false.
     running_ = false;
 }
@@ -86,14 +98,19 @@ void TaskRunLoop::StopTask()
     is_stoped_ = true;
 }
 
-void TaskRunLoop::PostTask(const Task& task, bool as_soon_as_possible)
+void TaskRunLoop::PostTask(Task task, bool as_soon_as_possible)
 {
-    if (task_queue_)
+    if (task_queue_ && IsRunning())
     {
-        if (as_soon_as_possible)
-            task_queue_->PushTask(task, true);
-        else
-            task_queue_->PushTask(task, false);
+        task_queue_->PushTask(task, as_soon_as_possible);
+    }
+}
+
+void TaskRunLoop::PushDelayedTask(Task task, size_t ms)
+{
+    if (task_queue_ && IsRunning())
+    {
+        task_queue_->PushDelayedTask(task, std::chrono::milliseconds(ms));
     }
 }
 

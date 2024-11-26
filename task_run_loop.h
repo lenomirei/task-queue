@@ -17,7 +17,8 @@ public:
 
     void StopWithClosure(bool as_soon_as_possible = false);
 
-    void PostTask(const Task& task, bool as_soon_as_possible = false);
+    void PostTask(Task task, bool as_soon_as_possible = false);
+    void PushDelayedTask(Task task, size_t ms);
     bool IsRunning();
 
 protected:
@@ -38,6 +39,6 @@ private:
     std::unique_ptr<TaskQueue> task_queue_ = nullptr;
 
     std::mutex thread_lock_;
-
+    std::condition_variable cond_;
 };
 
