@@ -12,12 +12,12 @@
 #include "../task.h"
 #include "../task_run_loop.h"
 
-void TaskFunction() {
-    std::cout << "This is a task" << std::endl;
+void TaskFunction(int a, int b) {
+    std::cout << "This is a task" <<a <<b << std::endl;
 }
 
-int add(int a, int b) {
-    return a + b;
+int add(int a, int b, int c) {
+    return a + b + c;
 }
 
 int main()
@@ -25,7 +25,7 @@ int main()
     std::unique_ptr<TaskRunLoop> run_loop = std::make_unique<TaskRunLoop>();
     run_loop->Start();
 
-     OnceClosure task(BindClosure(&TaskFunction));
+     OnceClosure task(BindClosure(&TaskFunction, 1, 2));
 
      run_loop->PostTask(task);
 
@@ -34,8 +34,8 @@ int main()
     run_loop->StopWithClosure();
 
 
-    Task<int()> add_func = BindOnce(&add, 1, 2);
-    int teaaast = add_func.Run();
+    Task<int(int)> add_func = BindOnce(&add, 1, 2);
+    int teaaast = add_func.Run(3);
 
     run_loop = nullptr;
 

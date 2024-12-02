@@ -50,7 +50,7 @@ template <typename Traits, typename R, typename StorageType, typename... Unbound
 struct Invoker<Traits, StorageType, R(UnboundArgs...)> {
     using Indices = std::make_index_sequence<
         std::tuple_size_v<decltype(StorageType::bound_args_)>>;
-  static R RunOnce(std::shared_ptr<TaskStateBase> base, UnboundArgs&&... unbound_args) {
+  static R RunOnce(std::shared_ptr<TaskStateBase> base, PassingType<UnboundArgs>... unbound_args) {
     std::shared_ptr<StorageType> storage = std::static_pointer_cast<StorageType>(base);
     
     return RunImpl(std::move(storage->func_), std::move(storage->bound_args_), Indices(), std::forward<UnboundArgs>(unbound_args)...);
