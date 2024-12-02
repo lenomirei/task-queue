@@ -4,8 +4,7 @@
 #include <deque>
 #include <mutex>
 #include <thread>
-
-class Task;
+#include "task.h"
 
 class TaskRunLoop {
  public:
@@ -17,7 +16,7 @@ class TaskRunLoop {
 
   void StopWithClosure(bool as_soon_as_possible = false);
 
-  void PostTask(Task task, bool as_soon_as_possible = false);
+  void PostTask(OnceClosure task, bool as_soon_as_possible = false);
   bool IsRunning();
   bool IsInCurrentThread();
 
@@ -36,7 +35,7 @@ class TaskRunLoop {
   // only used for child thread loop, do not access this in other thread!
   bool is_stoped_ = true;
   std::unique_ptr<std::thread> thread_ = nullptr;
-  std::unique_ptr<std::deque<Task>> task_queue_ = nullptr;
+  std::unique_ptr<std::deque<OnceClosure>> task_queue_ = nullptr;
 
   std::mutex thread_lock_;
   std::mutex queue_mutex_;
