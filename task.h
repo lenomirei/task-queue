@@ -31,8 +31,10 @@ struct TaskState final : public TaskStateBase {
  public:
   using BoundArgsTuple = std::tuple<BoundArgs...>;
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
-  TaskState(TaskStateBase::InvokeFuncStorage invoke_func_storage, ForwardFunctor&& functor, ForwardBoundArgs&&... bound_args) : TaskStateBase(invoke_func_storage) {
-    func_ = functor;
+  TaskState(TaskStateBase::InvokeFuncStorage invoke_func_storage,
+            ForwardFunctor&& functor, ForwardBoundArgs&&... bound_args)
+      : TaskStateBase(invoke_func_storage),
+        func_(std::forward<ForwardFunctor>(functor)) {
     bound_args_ = BoundArgsTuple(bound_args...);
   }
   template <typename ForwardFunctor, typename... ForwardBoundArgs>
@@ -137,6 +139,20 @@ struct Traits<R (Receiver::*)(Args...)> {
   template<typename Method, typename Receiver, typename... RunArgs>
   static R Invoke(Method method, Receiver&& receiver, RunArgs&&... args) {
       return ((*receiver).*method)(std::forward<RunArgs>(args)...);
+  }
+};
+
+template <typename T>
+struct Traits : Traits<decltype(&T::operator())> {};
+
+template <typename R, typename Receiver, typename... Args>
+struct Traits<R (Receiver::*)(Args...) const> {
+  using ReturnType = R;
+  using ArgList = TypeList<Args...>;
+
+  template <typename Function, typename... RunArgs>
+  static R Invoke(Function&& function, RunArgs&&... args) {
+    return std::forward<Function>(function)(std::forward<RunArgs>(args)...);
   }
 };
 
