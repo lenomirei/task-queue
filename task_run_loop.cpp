@@ -3,7 +3,7 @@
 #include "task.h"
 
 TaskRunLoop::TaskRunLoop()
-    : task_queue_(std::make_unique<std::deque<Task>>()) {
+    : task_queue_(std::make_unique<std::deque<OnceClosure>>()) {
 }
 
 TaskRunLoop::~TaskRunLoop() {
@@ -52,7 +52,7 @@ void TaskRunLoop::Run() {
     while (task_queue_->empty()) {
       cond_.wait(lock);
     }
-    Task task = std::move(task_queue_->front());
+    OnceClosure task = std::move(task_queue_->front());
     task_queue_->pop_front();
 
     lock.unlock();
@@ -67,7 +67,7 @@ void TaskRunLoop::AfterRun() {
 
 void TaskRunLoop::StopWithClosure(bool as_soon_as_possible) {
   // can not join in itself
-  Task stop_task(std::bind(&TaskRunLoop::StopTask, this));
+  OnceClosure stop_task = BindClosure(&TaskRunLoop::StopTask, this);
 
   PostTask(stop_task, as_soon_as_possible);
   // this function run in another thread join the thread here
@@ -83,7 +83,7 @@ void TaskRunLoop::StopTask() {
   is_stoped_ = true;
 }
 
-void TaskRunLoop::PostTask(Task task, bool as_soon_as_possible) {
+void TaskRunLoop::PostTask(OnceClosure task, bool as_soon_as_possible) {
   {
     std::lock_guard<std::mutex> lock(queue_mutex_);
     if (task_queue_->empty())

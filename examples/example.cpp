@@ -1,3 +1,10 @@
+/*
+ * @Author: lenomirei lenomirei@163.com
+ * @Date: 2023-04-25 11:59:12
+ * @FilePath: \task-queue\examples\example.cpp
+ * @Description: 
+ * 
+ */
 #include <iostream>
 
 #include <functional>
@@ -5,8 +12,12 @@
 #include "../task.h"
 #include "../task_run_loop.h"
 
-void TaskFunction() {
-    std::cout << "This is a task" << std::endl;
+void TaskFunction(int a, int b) {
+    std::cout << "This is a task" <<a <<b << std::endl;
+}
+
+int add(int a, int b, int c) {
+    return a + b + c;
 }
 
 int main()
@@ -14,13 +25,17 @@ int main()
     std::unique_ptr<TaskRunLoop> run_loop = std::make_unique<TaskRunLoop>();
     run_loop->Start();
 
-    Task task(std::bind(&TaskFunction));
+     OnceClosure task(BindClosure(&TaskFunction, 1, 2));
 
-    run_loop->PostTask(task);
+     run_loop->PostTask(task);
 
     std::this_thread::sleep_for(std::chrono::seconds(5));
 
     run_loop->StopWithClosure();
+
+
+    Task<int(int)> add_func = BindOnce(&add, 1, 2);
+    int teaaast = add_func.Run(3);
 
     run_loop = nullptr;
 
